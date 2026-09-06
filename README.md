@@ -32,9 +32,20 @@ The second column is the raw hex bytes. Each line is 32 values formatted as 2 he
 
 The final column is the ASCII text of the file which corresponds to the hexadecimal bytes.
 
-If a character is not displayable, such as a newline or space, it is replaced with a '.'.
+If a character is not displayable, such as a newline, it is replaced with a '.'.
 
 ## Further improvements
 
-- [ ] - remaining xxd features - different outputs
-- [ ] - other customization features
+- [ ] remaining xxd features
+- [ ] other customization features
+
+## Remaining xxd features
+
+- [ ] Reading from stdin if no file is specified or if '-' is specified
+- [ ] Sending to an outfile if specified
+- [ ] Specifying '-' as an outfile
+- [ ] Convert a hexdump file to binary
+- [ ] Option parameters work with decimal, hexadecimal or octal notation
+
+
+
