@@ -72,17 +72,17 @@ fn build_lines(hex_and_text_iter: &[(String, String)]) -> Vec<Line> {
         .chunks(8)
         .enumerate()
         .map(|(chunk_idx, chunk)| {
-            let hex_line = chunk
+            let output = chunk
                 .iter()
                 .map(|each| each.0.to_string())
                 .collect::<Vec<String>>()
                 .join(" ");
-            let text_line = chunk
+            let output_ascii = chunk
                 .iter()
                 .map(|each| each.1.to_string())
                 .collect::<Vec<String>>()
                 .join("");
-            Line::new(format!("{:08x}", chunk_idx * 8), hex_line, text_line)
+            Line::new(format!("{:08x}", chunk_idx * 8), output, output_ascii)
         })
         .collect()
 }
