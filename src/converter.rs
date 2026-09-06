@@ -1,4 +1,4 @@
-use std::{collections::binary_heap::Iter, fmt};
+use std::fmt;
 
 pub struct Line {
     offset: String,
