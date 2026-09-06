@@ -68,8 +68,8 @@ pub fn convert(bytes: &[u8]) -> Vec<Line> {
     build_lines(&hex_and_text_iter)
 }
 
-fn build_lines(hex_and_text_iter: &[(String, String)]) -> Vec<Line> {
-    hex_and_text_iter
+fn build_lines(hex_text_pairs: &[(String, String)]) -> Vec<Line> {
+    hex_text_pairs
         .chunks(8)
         .enumerate()
         .map(|(chunk_idx, chunk)| {

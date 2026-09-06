@@ -1,5 +1,8 @@
 mod converter;
-use std::fs;
+use std::{
+    fs,
+    io::{self, Read, stdin},
+};
 
 use clap::Parser;
 
@@ -18,7 +21,7 @@ use crate::converter::convert;
 #[derive(Parser, Debug)]
 #[command(version, about, long_about)]
 struct Cli {
-    filepath: String,
+    filepath: Option<String>,
 }
 
 fn main() {
@@ -28,7 +31,15 @@ fn main() {
     }
 }
 fn run(args: Cli) -> Result<(), std::io::Error> {
-    let contents = fs::read(args.filepath)?;
+    let contents = if let Some(filepath) = args.filepath
+        && filepath != "-"
+    {
+        fs::read(filepath)?
+    } else {
+        let mut buf = Vec::new();
+        stdin().read_to_end(&mut buf)?;
+        buf
+    };
     let lines = convert(&contents);
     for line in lines {
         println!("{}", line);
