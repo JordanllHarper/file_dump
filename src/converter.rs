@@ -63,42 +63,28 @@ pub fn convert(bytes: &[u8]) -> Vec<Line> {
         return Vec::new();
     }
     let parts = get_parts(bytes);
-    let hex_and_text_iter = get_hex_and_text_iter(&parts);
-    build_lines(hex_and_text_iter)
+    let hex_and_text_iter = get_hex_and_text_iter(&parts).collect::<Vec<(String, String)>>();
+    build_lines(&hex_and_text_iter)
 }
 
-fn build_lines(hex_and_text_iter: impl Iterator<Item = (String, String)>) -> Vec<Line> {
-    let mut lines: Vec<Line> = Vec::new();
-
-    let mut hex_buf = Vec::new();
-    let mut c_buf = Vec::new();
-    let mut offset = 0;
-
-    for (i, (hex, c)) in hex_and_text_iter.enumerate() {
-        if i > 0 && i % 8 == 0 {
-            let hex_line = hex_buf.join(" ");
-            lines.push(Line::new(
-                format!("{:08x}", offset),
-                hex_line,
-                c_buf.join(""),
-            ));
-
-            hex_buf.clear();
-            c_buf.clear();
-            offset += 16
-        }
-
-        hex_buf.push(hex);
-        c_buf.push(c);
-    }
-
-    lines.push(Line::new(
-        format!("{:08x}", offset),
-        hex_buf.join(" "),
-        c_buf.join(""),
-    ));
-
-    lines
+fn build_lines(hex_and_text_iter: &[(String, String)]) -> Vec<Line> {
+    hex_and_text_iter
+        .chunks(8)
+        .enumerate()
+        .map(|(chunk_idx, chunk)| {
+            let hex_line = chunk
+                .iter()
+                .map(|each| each.0.to_string())
+                .collect::<Vec<String>>()
+                .join(" ");
+            let text_line = chunk
+                .iter()
+                .map(|each| each.1.to_string())
+                .collect::<Vec<String>>()
+                .join("");
+            Line::new(format!("{:08x}", chunk_idx * 8), hex_line, text_line)
+        })
+        .collect()
 }
 
 #[cfg(test)]
