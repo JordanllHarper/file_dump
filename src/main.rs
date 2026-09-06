@@ -1,8 +1,5 @@
 mod converter;
-use std::{
-    fmt::{self},
-    fs,
-};
+use std::fs;
 
 use clap::Parser;
 

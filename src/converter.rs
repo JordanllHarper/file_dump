@@ -1,5 +1,6 @@
 use std::fmt;
 
+#[derive(Debug, PartialEq, Eq)]
 pub struct Line {
     offset: String,
     output: String,
@@ -18,11 +19,11 @@ impl fmt::Display for Line {
 }
 
 impl Line {
-    fn new(offset: String, output: String, output_ascii: String) -> Self {
+    fn new(offset: &str, output: &str, output_ascii: &str) -> Self {
         Self {
-            offset,
-            output,
-            output_ascii,
+            offset: offset.to_string(),
+            output: output.to_string(),
+            output_ascii: output_ascii.to_string(),
         }
     }
 }
@@ -82,14 +83,15 @@ fn build_lines(hex_and_text_iter: &[(String, String)]) -> Vec<Line> {
                 .map(|each| each.1.to_string())
                 .collect::<Vec<String>>()
                 .join("");
-            Line::new(format!("{:08x}", chunk_idx * 8), output, output_ascii)
+            Line::new(&format!("{:08x}", chunk_idx * 16), &output, &output_ascii)
         })
         .collect()
 }
 
 #[cfg(test)]
 mod test {
-    use crate::converter::convert;
+    use crate::converter::{Line, convert};
+    use pretty_assertions::{assert_eq, assert_ne};
 
     #[test]
     fn convert_to_hex_chunks_handles_16_chunks_correctly() {
@@ -105,18 +107,58 @@ name =";
     #[test]
     fn convert_to_hex_chunks_handles_multiple_lines_of_chunks() {
         let input = b"[package]
-name = \"hex_dump\"
+name = \"file_dump\"
 version = \"0.1.0\"
 edition = \"2024\"
 
 [dependencies]
 clap = { version = \"4.6.6\", features = [\"derive\"] }
 ";
+        let expected_output = vec![
+            Line::new(
+                "00000000",
+                "5b70 6163 6b61 6765 5d0a 6e61 6d65 203d",
+                "[package].name =",
+            ),
+            Line::new(
+                "00000010",
+                "2022 6669 6c65 5f64 756d 7022 0a76 6572",
+                " \"file_dump\".ver",
+            ),
+            Line::new(
+                "00000020",
+                "7369 6f6e 203d 2022 302e 312e 3022 0a65",
+                "sion = \"0.1.0\".e",
+            ),
+            Line::new(
+                "00000030",
+                "6469 7469 6f6e 203d 2022 3230 3234 220a",
+                "dition = \"2024\".",
+            ),
+            Line::new(
+                "00000040",
+                "0a5b 6465 7065 6e64 656e 6369 6573 5d0a",
+                ".[dependencies].",
+            ),
+            Line::new(
+                "00000050",
+                "636c 6170 203d 207b 2076 6572 7369 6f6e",
+                "clap = { version",
+            ),
+            Line::new(
+                "00000060",
+                "203d 2022 342e 362e 3622 2c20 6665 6174",
+                " = \"4.6.6\", feat",
+            ),
+            Line::new(
+                "00000070",
+                "7572 6573 203d 205b 2264 6572 6976 6522",
+                "ures = [\"derive\"",
+            ),
+            Line::new("00000080", "5d20 7d0a", "] }."),
+        ];
         let result = convert(input);
-        let line = result.first().expect("there should be 1 item");
-        assert_eq!("00000000", line.offset);
-        assert_eq!("5b70 6163 6b61 6765 5d0a 6e61 6d65 203d", line.output);
-        assert_eq!("[package].name =", line.output_ascii);
+        assert_eq!(result, expected_output);
     }
 
     #[test]
