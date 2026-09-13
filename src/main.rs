@@ -1,5 +1,6 @@
 mod converter;
 use std::{
+    error::Error,
     fs,
     io::{self, Read, stdin},
 };
@@ -35,7 +36,32 @@ fn main() {
         println!("Failed with error: {}", e);
     }
 }
-fn run(args: Cli) -> Result<(), std::io::Error> {
+
+#[derive(Debug)]
+enum FileDumpError {
+    InvalidCol(usize),
+}
+
+impl std::fmt::Display for FileDumpError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            FileDumpError::InvalidCol(cols) => write!(f, "invalid number of columns: {}", cols),
+            // TODO: More errors
+        }
+    }
+}
+
+impl Error for FileDumpError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        None
+    }
+
+    fn cause(&self) -> Option<&dyn Error> {
+        self.source()
+    }
+}
+
+fn run(args: Cli) -> Result<(), Box<dyn std::error::Error>> {
     let contents = if let Some(filepath) = args.infile
         && filepath != "-"
     {
@@ -45,7 +71,11 @@ fn run(args: Cli) -> Result<(), std::io::Error> {
         stdin().read_to_end(&mut buf)?;
         buf
     };
-    let lines = convert(&contents, args.cols.unwrap_or(16));
+    let cols = args.cols.unwrap_or(16);
+    if cols == 0 {
+        return Err(Box::new(FileDumpError::InvalidCol(cols)));
+    }
+    let lines = convert(&contents, cols);
     if let Some(outfile) = args.outfile
         && outfile != "-"
     {
