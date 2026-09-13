@@ -21,7 +21,12 @@ use crate::converter::convert;
 #[derive(Parser, Debug)]
 #[command(version, about, long_about)]
 struct Cli {
-    filepath: Option<String>,
+    infile: Option<String>,
+    outfile: Option<String>,
+
+    /// Number of cols to render per line. Default is 16.
+    #[arg(short, long)]
+    cols: Option<usize>,
 }
 
 fn main() {
@@ -31,7 +36,7 @@ fn main() {
     }
 }
 fn run(args: Cli) -> Result<(), std::io::Error> {
-    let contents = if let Some(filepath) = args.filepath
+    let contents = if let Some(filepath) = args.infile
         && filepath != "-"
     {
         fs::read(filepath)?
@@ -40,9 +45,19 @@ fn run(args: Cli) -> Result<(), std::io::Error> {
         stdin().read_to_end(&mut buf)?;
         buf
     };
-    let lines = convert(&contents);
-    for line in lines {
-        println!("{}", line);
+    let lines = convert(&contents, args.cols.unwrap_or(16));
+    if let Some(outfile) = args.outfile
+        && outfile != "-"
+    {
+        let raw = lines
+            .iter()
+            .map(|line| format!("{}\n", line))
+            .collect::<String>();
+        fs::write(outfile, raw)?;
+    } else {
+        for line in lines {
+            println!("{}", line);
+        }
     }
 
     Ok(())

@@ -9,12 +9,7 @@ pub struct Line {
 
 impl fmt::Display for Line {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let diff = 39 - self.output.len();
-        let mut chunk = self.output.clone();
-        for _ in 0..diff {
-            chunk.push(' ');
-        }
-        write!(f, "{}: {} {}", self.offset, chunk, self.output_ascii)
+        write!(f, "{}: {} {}", self.offset, self.output, self.output_ascii)
     }
 }
 
@@ -59,18 +54,18 @@ fn get_hex_and_text_iter(parts: &[Part]) -> impl Iterator<Item = (String, String
     })
 }
 
-pub fn convert(bytes: &[u8]) -> Vec<Line> {
+pub fn convert(bytes: &[u8], cols: usize) -> Vec<Line> {
     if bytes.is_empty() {
         return Vec::new();
     }
     let parts = get_parts(bytes);
     let hex_and_text_iter = get_hex_and_text_iter(&parts).collect::<Vec<(String, String)>>();
-    build_lines(&hex_and_text_iter)
+    build_lines(&hex_and_text_iter, cols.checked_div(2).unwrap_or(8), cols)
 }
 
-fn build_lines(hex_text_pairs: &[(String, String)]) -> Vec<Line> {
+fn build_lines(hex_text_pairs: &[(String, String)], chunks: usize, cols: usize) -> Vec<Line> {
     hex_text_pairs
-        .chunks(8)
+        .chunks(chunks)
         .enumerate()
         .map(|(chunk_idx, chunk)| {
             let output = chunk
@@ -83,7 +78,7 @@ fn build_lines(hex_text_pairs: &[(String, String)]) -> Vec<Line> {
                 .map(|each| each.1.to_string())
                 .collect::<Vec<String>>()
                 .join("");
-            Line::new(&format!("{:08x}", chunk_idx * 16), &output, &output_ascii)
+            Line::new(&format!("{:08x}", chunk_idx * cols), &output, &output_ascii)
         })
         .collect()
 }
@@ -97,13 +92,14 @@ mod test {
     fn convert_to_hex_chunks_handles_16_chunks_correctly() {
         let input = b"[package]
 name =";
-        let result = convert(input);
+        let result = convert(input, 16);
         let line = result.first().expect("there should be 1 item");
 
         assert_eq!("00000000", line.offset);
         assert_eq!("5b70 6163 6b61 6765 5d0a 6e61 6d65 203d", line.output);
         assert_eq!("[package].name =", line.output_ascii);
     }
+
     #[test]
     fn convert_to_hex_chunks_handles_multiple_lines_of_chunks() {
         let input = b"[package]
@@ -157,14 +153,35 @@ clap = { version = \"4.6.6\", features = [\"derive\"] }
             ),
             Line::new("00000080", "5d20 7d0a", "] }."),
         ];
-        let result = convert(input);
+        let result = convert(input, 16);
         assert_eq!(result, expected_output);
+    }
+
+    #[test]
+    fn convert_to_hex_chunks_handles_different_col_values() {
+        let input = b"[package]
+name = \"file_dump\"
+version = \"0.1.0\"
+edition = \"2024\"
+";
+        let expected_output = vec![
+            Line::new("00000000", "5b70 6163 6b61 6765", "[package"),
+            Line::new("00000008", "5d0a 6e61 6d65 203d", "].name ="),
+            Line::new("00000010", "2022 6669 6c65 5f64", " \"file_d"),
+            Line::new("00000018", "756d 7022 0a76 6572", "ump\".ver"),
+            Line::new("00000020", "7369 6f6e 203d 2022", "sion = \""),
+            Line::new("00000028", "302e 312e 3022 0a65", "0.1.0\".e"),
+            Line::new("00000030", "6469 7469 6f6e 203d", "dition ="),
+            Line::new("00000038", "2022 3230 3234 220a", " \"2024\"."),
+        ];
+        let result = convert(input, 8);
+        assert_eq!(expected_output, result);
     }
 
     #[test]
     fn convert_to_hex_chunks_handles_non_16_chunks_correctly() {
         let input = b"[package]";
-        let result = convert(input);
+        let result = convert(input, 16);
         let line = result.first().expect("there should be 1 item");
         assert_eq!("00000000", line.offset);
         assert_eq!("5b70 6163 6b61 6765 5d", line.output);
@@ -174,7 +191,7 @@ clap = { version = \"4.6.6\", features = [\"derive\"] }
     #[test]
     fn convert_to_hex_chunks_handles_empty_contents() {
         let input = b"";
-        let result = convert(input);
+        let result = convert(input, 16);
         assert!(result.is_empty());
     }
 }

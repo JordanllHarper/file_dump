@@ -41,11 +41,14 @@ If a character is not displayable, such as a newline, it is replaced with a '.'.
 
 ## Remaining xxd features
 
-- [ ] Reading from stdin if no file is specified or if '-' is specified
-- [ ] Sending to an outfile if specified
-- [ ] Specifying '-' as an outfile
-- [ ] Convert a hexdump file to binary
+- [x] Reading from stdin if no file is specified or if '-' is specified
+- [x] Sending to an outfile if specified
+- [x] Specifying '-' as an outfile
 - [ ] Option parameters work with decimal, hexadecimal or octal notation
+
+## Ones I'll probably not do anytime soon
+
+- [ ] Convert a hexdump file to binary
 
 
 
