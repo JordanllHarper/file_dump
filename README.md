@@ -39,15 +39,16 @@ If a character is not displayable, such as a newline, it is replaced with a '.'.
 - [ ] remaining xxd features
 - [ ] other customization features
 
-## Remaining xxd features
+## Remaining features
 
 - [x] Reading from stdin if no file is specified or if '-' is specified
 - [x] Sending to an outfile if specified
 - [x] Specifying '-' as an outfile
-- [ ] Option parameters work with decimal, hexadecimal or octal notation
+- [x] Padding out values if a hex line is not as long as specified max cols
 
 ## Ones I'll probably not do anytime soon
 
+- [ ] Option parameters work with decimal, hexadecimal or octal notation
 - [ ] Convert a hexdump file to binary
 
 
