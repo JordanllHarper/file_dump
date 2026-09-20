@@ -1,19 +1,27 @@
-# file_dump: an xxd clone written in Rust!
+# file_dump: an oxidized xxd clone
 
 This project takes a file and produces a readable hexadecimal output of the bytes in the file.
 
-## Installation - build from source
+## Installation
 
-1. Install the Rust toolchain via [rustup.rs](https://rustup.rs/) or skip if you have this already.
-2. Clone the repository.
-3. Run cargo build!
-    - This will produce a binary you can add to your path.
+Install the Rust toolchain via [rustup.rs](https://rustup.rs/) or skip if you have this already.
+
+### Install via Cargo:
+
+```sh
+    cargo install file_dump
+```
+
+### Install from source
+
+1. Clone the repository.
+2. `cargo build --release` - this produces a release binary you can add to your `PATH`.
 
 ## Usage
 
 `file_dump <FILE>`
 
-This will produce an output such as the following (which is from the project's `Cargo.toml`):
+This will produce an output such as the following (which is from a version of the project's `Cargo.toml`):
 
 ```
 00000000: 5b70 6163 6b61 6765 5d0a 6e61 6d65 203d  [package].name =
