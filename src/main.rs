@@ -2,7 +2,7 @@ mod converter;
 use std::{
     error::Error,
     fs,
-    io::{self, Read, stdin},
+    io::{Read, stdin},
 };
 
 use clap::Parser;
@@ -30,13 +30,6 @@ struct Cli {
     cols: Option<usize>,
 }
 
-fn main() {
-    let args = Cli::parse();
-    if let Err(e) = run(args) {
-        println!("Failed with error: {}", e);
-    }
-}
-
 #[derive(Debug)]
 enum FileDumpError {
     InvalidCol(usize),
@@ -61,7 +54,8 @@ impl Error for FileDumpError {
     }
 }
 
-fn run(args: Cli) -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let args = Cli::parse();
     let contents = if let Some(filepath) = args.infile
         && filepath != "-"
     {
