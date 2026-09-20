@@ -2,6 +2,8 @@
 name = "file_dump"
 version = "0.1.0"
 edition = "2024"
+description = "Produce a readable hexadecimal output of a files bytes."
+license = "MIT OR Apache-2.0"
 
 [dependencies]
 clap = { version = "4.6.6", features = ["derive"] }
